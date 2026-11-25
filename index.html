@@ -1,0 +1,1322 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leadership Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<!-- Use the same monday-sdk-js version as your other apps if it differs -->
+<script src="https://cdn.jsdelivr.net/npm/monday-sdk-js@0.5.5/dist/main.js"></script>
+<style>
+  :root {
+    --ink: #2D2D2D; --muted: #5B6472; --line: #DCE2E7; --soft: #EEF2F5;
+    --cyan: #44C8E8; --teal: #0B6A82; --white: #fff;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Lato, 'Segoe UI', Arial, sans-serif; color: var(--ink); background: var(--soft); }
+  .wrap { max-width: 1320px; margin: 0 auto; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+  .bar { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+  .bar h1 { margin: 0 16px 6px 0; font-size: 20px; font-weight: 900; }
+  label.ctl { display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700; color: var(--muted); }
+  select { height: 38px; min-width: 180px; border: 1px solid #B8C2CC; border-radius: 4px; padding: 0 10px; font: inherit; font-size: 14px; color: var(--ink); background: var(--white); }
+  nav { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; background: var(--white); border: 1px solid var(--line); border-radius: 6px; padding: 10px 14px; }
+  .arw { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--teal); background: var(--white); color: var(--teal); font-size: 20px; cursor: pointer; }
+  .arw:disabled { opacity: .35; cursor: default; }
+  .where { min-width: 170px; text-align: center; }
+  .where b { display: block; font-size: 15px; }
+  .where span { font-size: 12.5px; color: var(--muted); }
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-left: auto; }
+  .btn { height: 38px; padding: 0 16px; border-radius: 4px; border: 1px solid var(--teal); background: var(--teal); color: var(--white); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .btn:disabled { opacity: .5; cursor: default; }
+  #exportArea { position: fixed; left: -10000px; top: 0; width: 1240px; }
+  #exportArea .sheet { width: 1240px; min-height: 0; border-radius: 0; margin-bottom: 20px; }
+  #exportArea .scroll { overflow: visible; }
+  #exportArea .scroll table { min-width: 0; }
+  .btn2 { height: 38px; padding: 0 14px; border-radius: 4px; border: 1px solid var(--teal); background: var(--white); color: var(--teal); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .btn2:disabled { opacity: .5; cursor: default; }
+  .sk { background: linear-gradient(90deg, #EEF1F4 25%, #F7F9FA 50%, #EEF1F4 75%); background-size: 200% 100%; animation: sk 1.2s linear infinite; border-radius: 6px; }
+  @keyframes sk { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+  @media (prefers-reduced-motion: reduce) { .sk { animation: none; } }
+  .tab { height: 34px; padding: 0 12px; border-radius: 17px; border: 1px solid var(--line); background: var(--white); color: var(--teal); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .tab[aria-current="page"] { background: var(--teal); color: var(--white); border-color: var(--teal); }
+  .sheet { background: var(--white); border: 1px solid var(--line); border-radius: 6px; padding: 30px 40px 22px; min-height: 520px; display: flex; flex-direction: column; gap: 20px; }
+  .hd { display: flex; align-items: center; gap: 14px; padding-bottom: 12px; border-bottom: 3px solid var(--cyan); }
+  .hd .logo { width: 34px; height: 43px; flex: none; }
+  .hd h2 { margin: 0; font-size: 26px; font-weight: 900; }
+  .hd .sub { font-size: 14px; color: var(--muted); margin-top: 2px; }
+  .hd .pg { margin-left: auto; font-size: 13px; font-weight: 700; color: var(--muted); }
+  .note { padding: 14px 16px; border: 1px dashed #B8C2CC; border-radius: 6px; color: var(--muted); font-size: 14px; }
+  .err { padding: 14px 16px; border: 1px solid #F1B5AE; background: #FBE1DE; color: #8E1B12; border-radius: 6px; font-size: 14px; white-space: pre-wrap; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th { background: var(--cyan); color: #0E2F38; text-align: left; padding: 9px 10px; font-size: 12.5px; }
+  td { padding: 8px 10px; border-bottom: 1px solid #E6E9ED; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
+  .tile { border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+  .tname { font-size: 13px; font-weight: 700; color: var(--teal); }
+  .big { font-size: 24px; font-weight: 900; line-height: 1.1; }
+  .big small { font-size: 15px; font-weight: 700; color: var(--muted); }
+  .small { font-size: 12.5px; color: var(--muted); line-height: 1.35; }
+  /* Report sections panel */
+  dialog.secs { border: 1px solid var(--line); border-radius: 6px; padding: 22px 24px 18px; width: min(440px, calc(100vw - 32px)); color: var(--ink); font-family: inherit; }
+  dialog.secs::backdrop { background: rgba(45, 45, 45, .35); }
+  dialog.secs h3 { margin: 0 0 4px; font-size: 18px; font-weight: 900; }
+  dialog.secs p { margin: 0 0 14px; }
+  .secList { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 4px; }
+  .secList label { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 14px; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .secList label + label { border-top: 1px solid #E6E9ED; }
+  .secList label.fixed { cursor: default; color: var(--muted); }
+  .secList input { width: 18px; height: 18px; accent-color: var(--teal); cursor: pointer; }
+  .secBtns { display: flex; gap: 10px; justify-content: flex-end; align-items: center; margin-top: 16px; }
+  .secBtns .small { margin-right: auto; }
+  button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+  .pill { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+  .scroll { overflow-x: auto; border: 1px solid #E6E9ED; border-radius: 4px; }
+  .scroll table { min-width: 1100px; }
+  th.r, td.r { text-align: right; }
+  td:first-child { white-space: nowrap; }
+  .ftr { margin-top: auto; display: flex; justify-content: space-between; font-size: 11.5px; color: var(--muted); border-top: 1px solid #E6E9ED; padding-top: 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="bar">
+    <h1>Leadership report</h1>
+    <label class="ctl">Project <select id="fProject"></select></label>
+    <label class="ctl">Client <select id="fClient"></select></label>
+    <label class="ctl">Reporting period <select id="fPeriod"></select></label>
+    <button class="btn" id="exportPdf" type="button">Export PDF</button>
+    <button class="btn2" id="refresh" type="button" title="Reload the latest data from monday">Refresh</button>
+    <button class="btn2" id="sectionsBtn" type="button" title="Choose which departments appear in the report">Report sections</button>
+    <span class="small" id="updated"></span>
+    <span class="small" id="exportMsg" role="status"></span>
+  </div>
+  <nav aria-label="Report pages">
+    <button class="arw" id="prev" aria-label="Previous page">‹</button>
+    <div class="where"><b id="pageName"></b><span id="pageNo"></span></div>
+    <button class="arw" id="next" aria-label="Next page">›</button>
+    <div class="tabs" id="tabs"></div>
+  </nav>
+  <section class="sheet" id="sheet" aria-live="polite"></section>
+</div>
+
+<dialog class="secs" id="secDlg" aria-labelledby="secTitle">
+  <h3 id="secTitle">Report sections</h3>
+  <p class="small">Choose which departments appear in the report and the PDF. Hidden departments are also left out of the Portfolio overview and the overall status. Your choice is remembered in this browser.</p>
+  <div class="secList" id="secList"></div>
+  <div class="secBtns">
+    <button class="btn" id="secDone" type="button">Done</button>
+  </div>
+</dialog>
+
+<script>
+/* =========================================================
+   CONFIG: the only place board IDs, column IDs and settings live.
+   The report never depends on the board it is hosted on.
+   ========================================================= */
+const CONFIG = {
+  boards: {
+    portfolio: 5100469221,       // Portfolio | Projects
+    sitePerformance: 5106971717  // Site Performance (H&S, one row per project per month)
+  },
+  // H&S: Site Performance board columns
+  sitePerformance: {
+    project: 'board_relation_mm8m8fh7', projectName: 'dropdown_mm8mmeh0', month: 'date_mm8mgh19',
+    hours: 'numeric_mm8mfp3', gcc: 'numeric_mm8m5r81', tbt: 'numeric_mm8mtstn', aud: 'numeric_mm8mtt3t',
+    inc: 'numeric_mm8mdc1g', lti: 'numeric_mm8md4dc', nm: 'numeric_mm8m42dn', nc: 'numeric_mm8ms02h',
+    openCA: 'numeric_mm8makdq', overdueCA: 'numeric_mm8mnxxf'
+  },
+  // H&S targets for the whole project: columns on the Projects board.
+  // "Target to date" = project target x share of the Planned Timeline elapsed at the end of the period.
+  hsTargets: { gcc: 'numeric_mm7haytr', tbt: 'numeric_mm7h73j8', aud: 'numeric_mm7hgn88' },
+  // Project start and finish from the MS Project programme (earliest to latest baseline task date), written daily
+  // by the n8n Planned worker into the programme timeline column (timerange_mm91j0ar) on the Projects board. Counted in working days (Mon–Fri), as the POAP does.
+  // Status rules (draft, sent to John for confirmation)
+  // Quality boards: each item has a Project link, a Due Date and a Status
+  quality: {
+    benchmark:  { board: 5106892134, project: 'board_relation_mm8k8g4m', due: 'date_mm8mt3z1', status: 'color_mm8ky1sa', label: 'Benchmarks' },
+    checksheet: { board: 5106894810, project: 'board_relation_mm8krc9t', due: 'date_mm8kr3tz', status: 'color_mm8k28jr', label: 'Check sheets' },
+    handover:   { board: 5106941328, project: 'board_relation_mm8tc9g7', due: 'date4',         status: 'status',         label: 'Handovers' },
+    // Status labels that count as done (not case-sensitive). Update once labels are agreed across boards.
+    doneLabels: ['complete', 'completed', 'done', 'approved', 'signed off']
+  },
+  // POAP table on each project board (written by n8n): Total = target, PTD = planned to date, ITD = actual to date
+  projectBoard: {
+    total: 'numeric_mm83y3cg', planned: 'numeric_mm7rwtjg', actual: 'numeric_mm7rx2gw',
+    groups: { design: 'Design', commercial: 'Commercial', hs: 'H&S', quality: 'Quality' },   // matched by title
+    // Only the groups listed here are read from the project boards (reading every group roughly doubled the time).
+    // To use another group's rows in the report, add it here, e.g. hs: ['...'].
+    rows: {
+      design: ['Drawings', 'Techsubs', 'Call-Offs'],
+      commercial: ['RFQ', 'Suppliers Selected', 'Call-Offs'],
+    },
+    parallel: 8                // project boards read at the same time (one API call each: combining boards in one call is slower)
+  },
+  // Programme: weekly snapshots written by the Sunday n8n workflow (same rules as the Marked-up Programme)
+  progressHistory: {
+    board: 5106398376,
+    projectBoardId: 'text_mm8a8vpx', weekEnding: 'date_mm8av3kd',
+    planned: 'numeric_mm8aya41', actual: 'numeric_mm8av2aw', worstDelay: 'numeric_mm8a4dkt',
+    tasksBehind: 'numeric_mm8as8my', tasksTracked: 'numeric_mm8av68a', comments: 'long_text_mm8r7w13',
+    topDelays: 'long_text_mm911tf3',   // JSON list of the week's tasks furthest behind (from the Sunday workflow)
+    attentionCount: 6,                 // tasks shown in "Needs attention"
+    commentChars: 160            // how much of the Comments Log to show per project
+  },
+  // Leadership | Monthly Snapshot ("Reports" board): one row per project, month and metric.
+  // Past months read from here; the current month reads live from the POAP tables.
+  snapshot: {
+    board: 5107646065,
+    projectId: 'text_mm9012e3', projectName: 'text_mm90vvx2', month: 'date_mm906jwq', metric: 'dropdown_mm901802',
+    total: 'numeric_mm9031e9', ptd: 'numeric_mm90m8gn', itd: 'numeric_mm904neb', value: 'numeric_mm90wxfb',
+    status: 'color_mm90nc0e',
+    // POAP row name -> Metric label on the snapshot board
+    metrics: {
+      design: { 'Drawings': 'Drawings', 'Techsubs': 'Techsubs', 'Call-Offs': 'Design Call-Offs' },
+      commercial: { 'RFQ': 'RFQ', 'Suppliers Selected': 'Suppliers Selected', 'Call-Offs': 'Commercial Call-Offs' }
+    }
+  },
+  // Packages behind (Design / Commercial): written weekly by the Sunday n8n snapshot into the project's Progress History row,
+  // as JSON: {"total": 18, "behind": [{"name": "Unistrut supports", "stage": "PO not issued", "daysLate": 11}, ...]}
+  // The report shows the latest week in the selected month (same as the Programme page).
+  packagesBehind: {
+    columns: { design: 'long_text_mm917vq6', commercial: 'long_text_mm9139tr' },   // on the Progress History board
+    listCount: 8
+  },
+  // Snagging: no active board yet. Fill these in when the new board exists; the report picks it up automatically.
+  snagging: { board: null, project: null, status: null, closedLabels: ['closed'] },
+  rules: {
+    // Programme (draft, sent to John): variance = actual % - planned %
+    programme: { okVariance: -1, okDelay: 2, riskVariance: -5, riskDelay: 10 },
+    // Design & Commercial: shortfall = (planned - actual) / planned, worst row decides
+    progress: { riskUpToShortfall: 0.20 },   // above this = Action required; any shortfall = At risk
+    hs: { actionIfLti: true, riskIfNonCompliance: true, riskIfNoGccTbtAudit: true },
+    quality: { riskIfAnyOverdue: true, actionIfOverdueDays: 14, riskIfOpenSnags: 25, actionIfOpenSnags: 100 }
+  },
+  // Column IDs are optional. If left null, the column is found by its title below.
+  columns: {
+    portfolio: {
+      client: 'board_relation_mm5a20pg',   // Client (connected board)
+      projectBoardId: 'text_mm7ghd9',      // Project Board ID (used from Phase 3)
+      stage: 'portfolio_project_step',     // Stage
+      programmeTimeline: 'timerange_mm91j0ar'   // Programme timeline: MS Project dates written daily by n8n
+    }
+  },
+  columnTitles: {
+    portfolio: { client: 'Client', projectBoardId: 'Project  Board ID', stage: 'Stage', programmeTimeline: 'Programme Timeline' }
+  },
+  pdf: { libs: {
+    html2canvas: 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+    jspdf: 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js' } },
+  periodMonths: 12,            // the most months to offer in the period filter
+  firstPeriod: '2026-10',      // earliest month offered ('YYYY-MM'): the first month with report data. Later months appear automatically.
+  defaultPeriod: 0,            // 0 = current month, 1 = last completed month
+  // Projects left out of the report: name contains any of these words (not case-sensitive)
+  excludeNameContains: [],     // e.g. ['test'] to hide test projects before go-live
+  // Report sections: which departments are shown until someone changes them with the Report sections button
+  // (that choice is then remembered in their browser, like the filters).
+  sections: {
+    defaults: { programme: true, design: true, commercial: false, hs: false, quality: false }
+  },
+  pages: ['Portfolio overview', 'Programme', 'Design', 'Commercial', 'Health & safety', 'Quality']
+};
+
+// Holden monogram, embedded so the page and PDF export need no separate image file
+const LOGO = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADMAAABBCAYAAAB8S5zgAAAWfmNhQlgAABZ+anVtYgAAAB5qdW1kYzJwYQARABCAAACqADibcQNjMnBhAAAAFlhqdW1iAAAAR2p1bWRjMm1hABEAEIAAAKoAOJtxA3VybjpjMnBhOmY4OGVjYWVhLTNjZjAtNDczMi04ZmQ4LWVkZmY1NGIxN2NlZgAAAAOTanVtYgAAAClqdW1kYzJhcwARABCAAACqADibcQNjMnBhLmFzc2VydGlvbnMAAAAAuGp1bWIAAABEanVtZGNib3IAEQAQgAAAqgA4m3ETYzJwYS5pbmdyZWRpZW50LnYzAAAAABhjMnNogSyoUJyrwtyKsgujI6DaPAAAAGxjYm9yo2lkYzpmb3JtYXRpaW1hZ2UvcG5namluc3RhbmNlSUR4LHhtcDppaWQ6YmVkZWJhY2ItOGI1Yy00NmUxLWFjYTEtN2UyMmE3OTM4N2IwbHJlbGF0aW9uc2hpcGhwYXJlbnRPZgAAAeJqdW1iAAAAQWp1bWRjYm9yABEAEIAAAKoAOJtxE2MycGEuYWN0aW9ucy52MgAAAAAYYzJzaAq2Mo2RlDaL+2iG0Yo27SsAAAGZY2JvcqJnYWN0aW9uc4KiZmFjdGlvbmtjMnBhLm9wZW5lZGpwYXJhbWV0ZXJzoWtpbmdyZWRpZW50c4GiY3VybHgtc2VsZiNqdW1iZj1jMnBhLmFzc2VydGlvbnMvYzJwYS5pbmdyZWRpZW50LnYzZGhhc2hYIH9bINgteLA0sTgS2zNzy9fdshF99NXWsrKfWYs0oK29pGZhY3Rpb254HWNvbS5hbnRocm9waWMuY2xhdWRlLnByb3ZpZGVkanBhcmFtZXRlcnOheB9jb20uYW50aHJvcGljLm9yaWdpbi1jb25maWRlbmNlZ3Vua25vd25rZGVzY3JpcHRpb254ZkNsYXVkZSBwcm92aWRlZCB0aGlzIGZpbGUgYXQgdGhlIHJlcXVlc3Qgb2YgYSB1c2VyIGFuZCBtYXkgaGF2ZSBjcmVhdGVkIG9yIG1vZGlmaWVkIHRoZSBmaWxlIGNvbnRlbnRzLm1zb2Z0d2FyZUFnZW50oWRuYW1lZkNsYXVkZXJhbGxBY3Rpb25zSW5jbHVkZWT1AAAAyGp1bWIAAABAanVtZGNib3IAEQAQgAAAqgA4m3ETYzJwYS5oYXNoLmRhdGEAAAAAGGMyc2is+A9xZaP+MSJn7eiaJ3/DAAAAgGNib3KlY2FsZ2ZzaGEyNTZjcGFkTQAAAAAAAAAAAAAAAABkaGFzaFggkcokcgO7GztU/EtgoVa6rgpI2oV8OJNawEEbo7JvSUhkbmFtZW5qdW1iZiBtYW5pZmVzdGpleGNsdXNpb25zgaJlc3RhcnQYIWZsZW5ndGgZFooAAAI+anVtYgAAACdqdW1kYzJjbAARABCAAACqADibcQNjMnBhLmNsYWltLnYyAAAAAg9jYm9ypWNhbGdmc2hhMjU2aXNpZ25hdHVyZXhNc2VsZiNqdW1iZj0vYzJwYS91cm46YzJwYTpmODhlY2FlYS0zY2YwLTQ3MzItOGZkOC1lZGZmNTRiMTdjZWYvYzJwYS5zaWduYXR1cmVqaW5zdGFuY2VJRHgseG1wOmlpZDowYTZlODY5Zi00MDkwLTRkMzYtYTUwMy1iZWQxYmI0ZGE0NmFyY3JlYXRlZF9hc3NlcnRpb25zg6JjdXJseC1zZWxmI2p1bWJmPWMycGEuYXNzZXJ0aW9ucy9jMnBhLmluZ3JlZGllbnQudjNkaGFzaFggf1sg2C14sDSxOBLbM3PL192yEX301daysp9ZizSgrb2iY3VybHgqc2VsZiNqdW1iZj1jMnBhLmFzc2VydGlvbnMvYzJwYS5hY3Rpb25zLnYyZGhhc2hYILtWr+O8GdfvzCDtxymG7iucDoXqd1ZJpcblobbOAxjqomN1cmx4KXNlbGYjanVtYmY9YzJwYS5hc3NlcnRpb25zL2MycGEuaGFzaC5kYXRhZGhhc2hYINIBQSPgffRs4U5WzvfkKYgMhQctGBVUcHlm+kRDG9aXdGNsYWltX2dlbmVyYXRvcl9pbmZvo2RuYW1lb0FudGhyb3BpYyBGaWxlc2d2ZXJzaW9uZTEuMC4wa3NwZWNWZXJzaW9uZTIuNC4wAAAQOGp1bWIAAAAoanVtZGMyY3MAEQAQgAAAqgA4m3EDYzJwYS5zaWduYXR1cmUAAAAQCGNib3LShFkCEqIBJhghWQIKMIICBjCCAY2gAwIBAgIUQOWgCu7COdC+uIP6BkIFPWdVEwAwCgYIKoZIzj0EAwMwSTEXMBUGA1UEChMOQW50aHJvcGljLCBQQkMxLjAsBgNVBAMTJUFudGhyb3BpYyBDb250ZW50IENyZWRlbnRpYWxzIFJvb3QgQ0EwHhcNMjYwODA3MTg0MzU2WhcNMjgwODA2MTk0MzU2WjBEMRcwFQYDVQQKEw5BbnRocm9waWMsIFBCQzEpMCcGA1UEAxMgQW50aHJvcGljIENsYXVkZSBDb250ZW50IFNpZ25pbmcwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAASYegpry1AYBRTVNL1CpTlbROnY3dey+UrsF9C3phYrATN3ZHf93Mo8RQN0KOUuOn19P4oWNFWe5n2/She9N7eTo1gwVjAOBgNVHQ8BAf8EBAMCB4AwFQYDVR0lBA4wDAYKKwYBBAGD6F4CATAMBgNVHRMBAf8EAjAAMB8GA1UdIwQYMBaAFM5R4gSBTmRbI/jjxM+aPpzB11zCMAoGCCqGSM49BAMDA2cAMGQCMDFzHRSeAXrSy1WOzkbhPZ6Km2wGTmZ/2gK18k8BQGXyqz88Rdrz6CTX9flAnYNVxgIwcF9c3fVhqmJKpi+UhasNUMko69cyX6STPfta3Q8EjyzDjzoyrol46FP6VFHhvUcJoWNwYWRZDZ4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2WED38BC/GbxNWkAbqeoODK1NH9uohaLYAbc1mHglvEateWOhlexT21Vw+qS6MxLUoLeBsbcdcnKHuoT/HboNBh7pbsS/CQAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAASYSURBVHja7JrPattAEMZlyWAs4tYQSJsQg9vQQA99gJ566lP31FMfoDeDg1OHBAwmTkwtkmDamTAqm81q9xtJm0PxwCLbWFr99s+3s5+UJLvYxS400UH/+PnL1zEd9qnMfnz/tox9Y1RfTodTKiuqb4ackylAhlR+URmNxicPF+dnxQuAXFJ5RfXtUX2r0HmpAmQiPTJhIPp9PzLInOpbSH19uY/6PWOBbPg3aqEHaqlb+vi+7R6yQJZS3x+q55o+vg31UKYBKSMGkAvEqA8CyrQgMYB8IBqgrA5Im0AICAqUWhceiPzOQyBlyP94oo5rdswxlQ0q9/S/LR2mfJ90vwchNduKWuVgyzL8QcMpM0DUSurj0XQi99kNwXBLz7nrQ0ACMhL5bBJc3zAEJCA8JAsZDeF1RrrcC2SCoEPSE4U0SCWQCVKVEaSesVkJ1DKIOfecQAhIMANwAcUA8QGhIFA6YwEdxQLxAEEgEIwBxJp+qJHthkBTWSa6aNacgnK4LwvplUa2G2QEmaw/3IAZKtspCFIOrUtUthuClENrGlI5GMY12RHZbglkFlI5GManWjGAfKqFAqV1F8SWgYLyiwC5YHJUfk2ghjBjRH5NIFc+2HFkzacCslYMkSOR7XUNkFyy5omiPj7nI6uriJJ3zhzLGEYvzK3EvTQQOb0CykJAuAFypafgzNK7jt/44vcyFyayf4A2VvR9jQxRY7I/2kjldeiYhPY1Ml/6mqx5JpnsaVUPuXaIYLbtk1+v62OATGQ/A2fNlUC+rW4g20bk1wlkglSNllDW/AwI2bNXZNsa+X0ChIA8MzRG45MeT+KL87OlYSKs2DwQE+GOjh9A86Fgk0PMjt90fIfIr22SUHnjAqHfB/L/tTZrnpWiwJapwnxYisXK592j2a/RQ2NRSG+PaLPmXC66FlcEle1M0vi1mBa5Un43MnqGbWXN5hyZhFSuYrJPNKmPpVqwt50qQJYK2XbJL5TL2ZMdle1Q1uyTX59s++TXC1SlWiiQU83oWADer6ly12ydIvJrqdwtqxciv7bKldmLqWauRHMskHNEtYybmIrTCJkPloF4gKwj1ojhZeLGTDSrsmbVoz7jEeHWlTN54nWZNaPyawEtkKx5oNwh9uWrBoTjRtavnhQ0+onjCUa3wmt+fOwWGi6W95ubraRojD0rS9+Aw3OFqNk2AZ4japxGIFDZNudZgW4BvEAtg6CyHfQlfFsAJ1AMkBAQ6m+HtgBPgGKCVAFpjHrEOP8HROVTTJAK1wc26tPkPwokazbl92cCvi3R0N00VQvOtlMUhIdWSOXaBuGhpXFOU+06EhOoarKjQGmdBTEGUEi1EKC0jokdAQiSX0vl+qhxDsmvJdtNAnq9xQIahmDuJDeDDXABKiRBrROF1HunPGdr15laN3afKF+Os8yHOgvkHDVJHNv5VeW22bU99b2phDqNoXBtwbW+hBMGBWoLBAVCbOEMtUlNoLZBQkDoO2kd5RhdxgLxzMNeAr5c1wEvXgKVdmk0EAdQD3WKNC9pM9ChODdRQYw6eSHdvMRL4bvYBRh/BRgAyKpj3N1cAPgAAAAASUVORK5CYII=';
+
+/* ================= Data layer (shared by every page) ================= */
+const monday = window.mondaySdk();
+const cache = new Map();
+
+// Every call uses the same monday API version as the n8n workflows, so the report doesn't change if monday moves its default.
+const API_VERSION = '2026-07';
+
+/* Saved copy of the last load (this browser only).
+   Every monday response is kept. On the next visit the report is first built from them, so it shows straight away,
+   then everything is reloaded live in the background. */
+const SAVED_KEY = 'holden-leadership-report-saved-' + API_VERSION;
+let replay = null;     // last visit's responses, used only while the saved copy is being built
+let recorded = {};     // this visit's live responses
+let saveTimer = null;
+function readJSON(k, d) { try { return JSON.parse(localStorage.getItem(k) || 'null') || d; } catch (e) { return d; } }
+function writeJSON(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    if (!writeJSON(SAVED_KEY, { at: Date.now(), r: recorded })) {
+      // browser storage is full: drop the copy, the report then simply loads live as before
+      try { localStorage.removeItem(SAVED_KEY); } catch (e) {}
+      console.warn('[Leadership report] could not save a copy for the next visit (browser storage full)');
+    }
+  }, 1500);
+}
+
+async function gql(query, variables, apiVersion) {
+  const key = query + '|' + JSON.stringify(variables || {});
+  if (replay) {
+    if (key in replay) return replay[key];
+    throw new Error('Not in the saved copy');
+  }
+  const res = await monday.api(query, { variables, apiVersion: apiVersion || API_VERSION });
+  if (res.errors && res.errors.length) {
+    // full detail (message, field, reason) so a failure can be pinned down
+    const detail = res.errors.map(e => [e.message, e.extensions && e.extensions.code, e.extensions && JSON.stringify(e.extensions.error_data || e.extensions.problems || ''),
+      e.locations ? 'at ' + JSON.stringify(e.locations) : ''].filter(x => x && x !== '""').join(' | ')).join('; ');
+    const what = (query.match(/boards\(ids: \$\w+\)|next_items_page|items\(ids: \$\w+\)|me \{/) || ['query'])[0];
+    console.error('[Leadership report] monday error', { detail, query, variables });
+    throw new Error(`monday API error (${what}): ${detail}`);
+  }
+  if (res.error_message) throw new Error('monday API error: ' + res.error_message);
+  recorded[key] = res.data; scheduleSave();
+  return res.data;
+}
+
+// Connected-board and mirror columns don't always fill "text", so also ask for display_value.
+const ITEM_FIELDS = `id name group { id title } column_values { id text
+  ... on BoardRelationValue { display_value linked_item_ids }
+  ... on MirrorValue { display_value } }`;
+
+// Fetch every item on a board once (with paging) and cache it for all pages.
+// Fetch every item on a board once (with paging) and cache it for all pages.
+// cols: only these column IDs are requested (much smaller and faster); null = all columns.
+function fetchBoard(boardId, cols) {
+  const key = String(boardId) + '|' + (cols ? cols.join(',') : '*');
+  if (cache.has(key)) return cache.get(key);
+  const fields = cols ? ITEM_FIELDS.replace('column_values {', 'column_values(ids: $cols) {') : ITEM_FIELDS;
+  const vDef = cols ? ', $cols: [String!]' : '', vars = cols ? { cols } : {};
+  const p = (async () => {
+    const t0 = performance.now();
+    const first = await gql(
+      `query ($ids: [ID!]${vDef}) { boards(ids: $ids) { id name columns { id title type }
+         items_page(limit: 500) { cursor items { ${fields} } } } }`, Object.assign({ ids: [String(boardId)] }, vars));
+    const b = first.boards && first.boards[0];
+    if (!b) throw new Error(`Board ${boardId} was not found, or you don't have access to it.`);
+    let items = b.items_page.items, cursor = b.items_page.cursor;
+    while (cursor) {
+      const nx = await gql(`query ($c: String!${vDef}) { next_items_page(limit: 500, cursor: $c) { cursor items { ${fields} } } }`, Object.assign({ c: cursor }, vars));
+      items = items.concat(nx.next_items_page.items);
+      cursor = nx.next_items_page.cursor;
+    }
+    console.info(`[Leadership report] ${b.name}: ${items.length} items, ${cols ? cols.length : 'all'} columns, ${Math.round(performance.now() - t0)} ms`);
+    return { id: b.id, name: b.name, columns: b.columns, items };
+  })();
+  p.catch(() => cache.delete(key));   // allow a retry after an error
+  cache.set(key, p);
+  return p;
+}
+
+// Resolve a column ID from config, or by title if no ID is set.
+function colId(board, boardKey, field) {
+  const fixed = CONFIG.columns[boardKey] && CONFIG.columns[boardKey][field];
+  if (fixed) return fixed;
+  const title = (CONFIG.columnTitles[boardKey] || {})[field];
+  const c = board.columns.find(x => x.title.trim().toLowerCase() === String(title).toLowerCase());
+  if (!c) throw new Error(`Column "${title}" not found on board "${board.name}". Set its ID in CONFIG.columns.${boardKey}.${field}.`);
+  return c.id;
+}
+const val = (item, id) => {
+  const c = item.column_values.find(x => x.id === id);
+  if (!c) return '';
+  return String(c.text || c.display_value || '').trim();
+};
+
+async function loadProjects() {
+  const PC = CONFIG.columns.portfolio, T = CONFIG.hsTargets;
+  const ex = CONFIG.excludeNameContains.map(w => w.toLowerCase());
+  const isExcluded = (n) => ex.some(w => new RegExp('\\b' + w + '\\b', 'i').test(n));
+  const build = (it, client) => ({
+    id: it.id, name: it.name, client: client || 'No client',
+    boardId: val(it, PC.projectBoardId), stage: val(it, PC.stage),
+    hsTarget: { gcc: num(val(it, T.gcc)), tbt: num(val(it, T.tbt)), aud: num(val(it, T.aud)) },
+    timeline: PC.programmeTimeline ? parseTimeline(val(it, PC.programmeTimeline)) : null
+  });
+  // Client is a connected column: reading its names directly is slow on this board, so read the plain columns
+  // and the client links separately (in parallel), then look up the client names in one small call.
+  const plain = [PC.projectBoardId, PC.stage, PC.programmeTimeline, T.gcc, T.tbt, T.aud].filter(Boolean);
+  const [b, links] = await Promise.all([fetchBoard(CONFIG.boards.portfolio, plain), readLinks(CONFIG.boards.portfolio, PC.client)]);
+  const names = await itemNames([...new Set(Object.values(links).flat())]);
+  return b.items.filter(it => !isExcluded(it.name))
+    .map(it => build(it, (links[it.id] || []).map(id => names[id]).filter(Boolean).join(', ')));
+}
+
+// item id -> linked item ids for one connected column (no names, which is the slow part)
+async function readLinks(boardId, colIdLink) {
+  const t0 = performance.now(), out = {};
+  const F = `cursor items { id column_values(ids: ["${colIdLink}"]) { id ... on BoardRelationValue { linked_item_ids } } }`;
+  let d = await gql(`query ($b: [ID!]) { boards(ids: $b) { items_page(limit: 500) { ${F} } } }`, { b: [String(boardId)] });
+  let page = d.boards[0].items_page;
+  for (;;) {
+    page.items.forEach(it => { const c = (it.column_values || [])[0]; out[it.id] = c && c.linked_item_ids ? c.linked_item_ids.map(String) : []; });
+    if (!page.cursor) break;
+    d = await gql(`query ($c: String!) { next_items_page(limit: 500, cursor: $c) { ${F} } }`, { c: page.cursor });
+    page = d.next_items_page;
+  }
+  console.info(`[Leadership report] Client links: ${Object.keys(out).length} items, ${Math.round(performance.now() - t0)} ms`);
+  return out;
+}
+// item id -> name, 100 ids per call
+async function itemNames(ids) {
+  const t0 = performance.now(), out = {};
+  for (let i = 0; i < ids.length; i += 100) {
+    const d = await gql('query ($i: [ID!]) { items(ids: $i) { id name } }', { i: ids.slice(i, i + 100) });
+    (d.items || []).forEach(it => { out[String(it.id)] = it.name; });
+  }
+  if (ids.length) console.info(`[Leadership report] Client names: ${ids.length} clients, ${Math.round(performance.now() - t0)} ms`);
+  return out;
+}
+
+// Timeline text looks like "2026-01-05 - 2027-05-30"
+function parseTimeline(t) {
+  const m = String(t || '').match(/(\d{4}-\d{2}-\d{2}).*?(\d{4}-\d{2}-\d{2})/);
+  return m ? { start: new Date(m[1]), end: new Date(m[2]) } : null;
+}
+// Working days Monday to Friday between two dates, both included (same count as the POAP automation).
+function workdays(a, b) {
+  if (b < a) return 0;
+  let n = 0; const d = new Date(a.getFullYear(), a.getMonth(), a.getDate());
+  while (d <= b) { const w = d.getDay(); if (w !== 0 && w !== 6) n++; d.setDate(d.getDate() + 1); }
+  return n;
+}
+// Share of the programme falling between 1 Jan of the period's year (or project start, if later) and the period end.
+function ytdTimelineShare(tl, period) {
+  if (!tl) return null;
+  const [y, mo] = period.split('-').map(Number);
+  const from = new Date(Math.max(tl.start, new Date(y, 0, 1))), to = new Date(Math.min(tl.end, new Date(y, mo, 0)));
+  const total = workdays(tl.start, tl.end);
+  if (!total) return to >= from ? 1 : 0;
+  return Math.max(0, workdays(from, to) / total);
+}
+// Share of the programme elapsed at the end of the period (0 to 1), or null if no programme dates.
+function elapsedShare(tl, period) {
+  if (!tl) return null;
+  const [y, mo] = period.split('-').map(Number);
+  const end = new Date(Math.min(tl.end, new Date(y, mo, 0)));
+  const total = workdays(tl.start, tl.end);
+  if (!total) return 1;
+  return Math.max(0, Math.min(1, workdays(tl.start, end) / total));
+}
+
+
+// Packages behind for a project, kind and the selected month: the latest weekly Progress History row in that month.
+function packagesFor(p, kind, data) {
+  const r = (data.prog || []).filter(x => x.boardId === String(p.boardId) && x.weekEnding.slice(0, 7) === state.period)
+    .sort((a, b) => b.weekEnding.localeCompare(a.weekEnding))[0];
+  if (!r || !r.packages || !r.packages[kind]) return null;
+  let j; try { j = JSON.parse(r.packages[kind]); } catch (e) { return null; }
+  const list = Array.isArray(j.behind) ? j.behind : [];
+  const worst = list.reduce((a, x) => Math.max(a, Number(x.daysLate) || 0), 0);
+  return { total: Number(j.total) || 0, behind: j.behindCount != null ? Number(j.behindCount) : list.length, worst, list, weekEnding: r.weekEnding };
+}
+const num = (s) => { const n = parseFloat(String(s || '').replace(/,/g, '')); return isNaN(n) ? 0 : n; };
+
+// POAP tables: only the groups the report uses (those with rows in CONFIG.projectBoard.rows), read by group ID.
+const GROUPS_KEY = 'holden-leadership-report-poap-groups';   // board id -> { design: groupId, ... }, remembered in this browser
+const BOARDS_KEY = 'holden-leadership-report-board-ids';     // last visit's project boards, so their POAP read can start early
+const poapKinds = () => Object.keys(CONFIG.projectBoard.rows);
+const groupTitle = (k) => String(CONFIG.projectBoard.groups[k]).trim().toLowerCase();
+
+// Group IDs per board. Looked up by title (one cheap call) only for boards not seen before, or when force is set.
+async function poapGroups(ids, force) {
+  const known = readJSON(GROUPS_KEY, {});
+  const look = ids.filter(id => force || !known[id] || poapKinds().some(k => !known[id][k]));
+  if (look.length) {
+    const t0 = performance.now();
+    const d = await gql('query ($ids: [ID!]) { boards(ids: $ids) { id groups { id title } } }', { ids: look });
+    (d.boards || []).forEach(b => {
+      const m = {};
+      poapKinds().forEach(k => { const g = b.groups.find(x => x.title.trim().toLowerCase() === groupTitle(k)); if (g) m[k] = g.id; });
+      known[String(b.id)] = m;
+    });
+    writeJSON(GROUPS_KEY, known);
+    console.info(`[Leadership report] POAP group IDs looked up for ${look.length} board(s), ${Math.round(performance.now() - t0)} ms`);
+  }
+  return known;
+}
+
+// Reads the POAP rows of the given project boards: one call per board, several at once.
+async function loadProjectBoards(ids) {
+  const PB = CONFIG.projectBoard, out = {}, t0 = performance.now();
+  const cols = [PB.total, PB.planned, PB.actual];
+  let groups = await poapGroups(ids);
+  const Q = `query ($ids: [ID!], $g: [String], $cols: [String!]) { boards(ids: $ids) { id groups(ids: $g) { id title
+      items_page(limit: 100) { items { name column_values(ids: $cols, capabilities: [CALCULATED]) { id text ... on NumbersValue { number } } } } } } }`;
+  const readRows = (g) => {
+    const rows = {};
+    g.items_page.items.forEach(it => {
+      // Multi-level project boards: Total/PTD/ITD are rollup Number columns, which monday only returns with
+      // capabilities: [CALCULATED]; their value may come back in "number" rather than "text".
+      const t = (id) => {
+        const c = it.column_values.find(x => x.id === id);
+        if (!c) return null;
+        if (c.text !== '' && c.text != null) return num(c.text);
+        return c.number != null ? Number(c.number) : null;
+      };
+      rows[it.name.trim().toLowerCase()] = { total: t(PB.total), planned: t(PB.planned), actual: t(PB.actual) };
+    });
+    return rows;
+  };
+  const readBoard = async (id, retried) => {
+    const want = groups[id] || {};
+    const gids = poapKinds().map(k => want[k]).filter(Boolean);
+    const tables = {};
+    if (gids.length) {
+      const d = await gql(Q, { ids: [id], g: gids, cols });
+      const b = (d.boards || [])[0];
+      poapKinds().forEach(k => {
+        const g = b && b.groups.find(x => x.id === want[k] && x.title.trim().toLowerCase() === groupTitle(k));
+        if (g) tables[k] = readRows(g);
+      });
+    }
+    // A remembered group was renamed, deleted or recreated: look the board's groups up again, once.
+    if (!retried && poapKinds().some(k => want[k] && !tables[k])) {
+      groups = Object.assign({}, groups, await poapGroups([id], true));
+      return readBoard(id, true);
+    }
+    out[id] = tables;
+  };
+  for (let i = 0; i < ids.length; i += PB.parallel) await Promise.all(ids.slice(i, i + PB.parallel).map(id => readBoard(String(id))));
+  console.info(`[Leadership report] POAP tables: ${ids.length} project boards, ${Math.round(performance.now() - t0)} ms`);
+  return out;
+}
+
+// Snags per project: total raised and closed. Returns null while no snagging board is configured.
+async function loadSnagging() {
+  const S = CONFIG.snagging;
+  if (!S.board) return null;
+  const b = await fetchBoard(S.board, [S.project, S.status]);
+  const out = {};
+  b.items.forEach(it => {
+    const rel = it.column_values.find(x => x.id === S.project);
+    const closed = S.closedLabels.includes(val(it, S.status).toLowerCase());
+    (rel && rel.linked_item_ids ? rel.linked_item_ids : []).forEach(pid => {
+      const o = out[String(pid)] || (out[String(pid)] = { total: 0, actual: 0 });
+      o.total++; if (closed) o.actual++;
+    });
+  });
+  return out;
+}
+
+// Monthly snapshot rows (cached once). Values are null when the row says "No Source".
+let snapPromise = null;
+function getSnapshot() {
+  if (snapPromise) return snapPromise;
+  snapPromise = (async () => {
+    const S = CONFIG.snapshot;
+    const b = await fetchBoard(S.board, [S.projectId, S.projectName, S.month, S.metric, S.total, S.ptd, S.itd, S.value, S.status]);
+    return b.items.map(it => {
+      const noSource = val(it, S.status).toLowerCase() === 'no source';
+      const n = (id) => { if (noSource) return null; const t = val(it, id); return t === '' ? null : num(t); };
+      return { projectId: val(it, S.projectId), projectName: val(it, S.projectName).toLowerCase(), month: val(it, S.month).slice(0, 7), metric: val(it, S.metric).toLowerCase(),
+        total: n(S.total), planned: n(S.ptd), actual: n(S.itd), value: n(S.value) };
+    });
+  })().catch(e => { snapPromise = null; throw e; });
+  return snapPromise;
+}
+const currentMonth = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; };
+
+// Builds the same shape as a POAP table, from the snapshot, for one project, kind and month.
+function snapshotTable(snap, project, kind, period) {
+  const map = CONFIG.snapshot.metrics[kind];
+  const rows = {}; let found = false;
+  Object.entries(map).forEach(([poapName, metric]) => {
+    // Match by Project ID; if the row has no ID, fall back to the project name
+    const r = snap.find(x => (x.projectId ? x.projectId === String(project.id) : x.projectName === project.name.toLowerCase())
+      && x.month === period && x.metric === metric.toLowerCase());
+    if (r) { found = true; rows[poapName.toLowerCase()] = { total: r.total, planned: r.planned, actual: r.actual }; }
+  });
+  return found ? rows : null;
+}
+
+// Weekly programme snapshots, one row per project board per week.
+async function loadProgressHistory() {
+  const H = CONFIG.progressHistory;
+  const b = await fetchBoard(H.board, [H.projectBoardId, H.weekEnding, H.planned, H.actual, H.worstDelay, H.tasksBehind, H.tasksTracked,
+    H.comments, H.topDelays, CONFIG.packagesBehind.columns.design, CONFIG.packagesBehind.columns.commercial]);
+  return b.items.map(it => ({
+    boardId: val(it, H.projectBoardId), weekEnding: val(it, H.weekEnding).slice(0, 10),
+    planned: num(val(it, H.planned)), actual: num(val(it, H.actual)), worstDelay: num(val(it, H.worstDelay)),
+    tasksBehind: num(val(it, H.tasksBehind)), tasksTracked: num(val(it, H.tasksTracked)), comments: val(it, H.comments),
+    packages: { design: val(it, CONFIG.packagesBehind.columns.design), commercial: val(it, CONFIG.packagesBehind.columns.commercial) },
+    topDelays: (() => { try { const j = JSON.parse(val(it, H.topDelays) || '[]'); return Array.isArray(j) ? j : []; } catch (e) { return []; } })()
+  })).filter(r => r.boardId && r.weekEnding);
+}
+
+async function loadQuality() {
+  const Q = CONFIG.quality;
+  const kinds = ['benchmark', 'checksheet', 'handover'];
+  const boards = await Promise.all(kinds.map(k => fetchBoard(Q[k].board, [Q[k].project, Q[k].due, Q[k].status])));
+  const out = {};
+  kinds.forEach((k, i) => {
+    const C = Q[k];
+    out[k] = boards[i].items.map(it => {
+      const rel = it.column_values.find(x => x.id === C.project);
+      const due = val(it, C.due);
+      return {
+        name: it.name,
+        projectIds: rel && rel.linked_item_ids ? rel.linked_item_ids.map(String) : [],
+        due: due ? new Date(due.slice(0, 10)) : null,
+        done: Q.doneLabels.includes(val(it, C.status).toLowerCase())
+      };
+    });
+  });
+  return out;
+}
+
+async function loadSitePerformance() {
+  const b = await fetchBoard(CONFIG.boards.sitePerformance, Object.values(CONFIG.sitePerformance));
+  const C = CONFIG.sitePerformance;
+  return b.items.map(it => {
+    const rel = it.column_values.find(x => x.id === C.project);
+    const r = { projectIds: rel && rel.linked_item_ids ? rel.linked_item_ids.map(String) : [],
+      projectName: val(it, C.projectName), month: val(it, C.month).slice(0, 7) };
+    ['hours', 'gcc', 'tbt', 'aud', 'inc', 'lti', 'nm', 'nc', 'openCA', 'overdueCA'].forEach(k => { r[k] = num(val(it, C[k])); });
+    return r;
+  });
+}
+
+/* ================= State ================= */
+const state = { page: 0, project: 'all', client: 'all', period: '', projects: [], error: '', loading: true, data: {}, pageErrors: {},
+  sections: Object.assign({}, CONFIG.sections.defaults) };
+
+/* ================= Report sections (department visibility) ================= */
+const SECTIONS = [
+  { key: 'programme',  name: 'Programme',       short: 'Programme' },
+  { key: 'design',     name: 'Design',          short: 'Design' },
+  { key: 'commercial', name: 'Commercial',      short: 'Commercial' },
+  { key: 'hs',         name: 'Health & safety', short: 'H&S' },
+  { key: 'quality',    name: 'Quality',         short: 'Quality' }
+];
+const isOn = (k) => !k || state.sections[k] === true;
+// Absolute PAGES indexes of the pages currently shown, in report order (the overview is always shown).
+const visiblePages = () => PAGES.map((_, i) => i).filter(i => isOn(PAGES[i].section));
+const SECTIONS_KEY = 'holden-leadership-report-sections';
+
+// Shown sections: the defaults above, overridden by this browser's last choice.
+function loadSections() {
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(SECTIONS_KEY) || 'null'); } catch (e) {}
+  const out = Object.assign({}, CONFIG.sections.defaults);
+  if (saved && typeof saved === 'object') SECTIONS.forEach(({ key }) => { if (typeof saved[key] === 'boolean') out[key] = saved[key]; });
+  state.sections = out;
+}
+function setSection(key, on) {
+  state.sections[key] = on;
+  try { localStorage.setItem(SECTIONS_KEY, JSON.stringify(state.sections)); } catch (e) {}
+  // the overview combines sections, so rebuild it; other pages keep their cached data
+  delete state.data.overview; delete state.pageErrors.overview;
+  render();
+  if (!state.loading && !state.error) setTimeout(prefetchPages, 100);
+}
+function openSections() {
+  $('secList').innerHTML = `<label class="fixed">Portfolio overview <span class="small">Always shown</span></label>` +
+    SECTIONS.map(s => `<label for="sec_${s.key}">${esc(s.name)} <input type="checkbox" id="sec_${s.key}" data-k="${s.key}"${isOn(s.key) ? ' checked' : ''}></label>`).join('');
+  $('secDlg').showModal();
+}
+
+const pending = new Set();
+// After the first page shows, quietly load the other pages' data so switching pages is instant.
+async function prefetchPages() {
+  const seen = new Set();
+  const order = PAGES.map((pg, i) => ({ pg, i })).sort((a, b) => ((a.i - state.page + PAGES.length) % PAGES.length) - ((b.i - state.page + PAGES.length) % PAGES.length));
+  for (const { pg } of order) {
+    if (!pg.load || !isOn(pg.section) || seen.has(pg.key)) continue;
+    seen.add(pg.key);
+    if (pg.key in state.data || pg.key in state.pageErrors || pending.has(pg.key)) continue;
+    pending.add(pg.key);
+    const t0 = performance.now();
+    try { state.data[pg.key] = await pg.load(); } catch (e) { state.pageErrors[pg.key] = e.message || String(e); }
+    pending.delete(pg.key);
+    console.info(`[Leadership report] page data "${pg.key}" ready in ${Math.round(performance.now() - t0)} ms`);
+    if (PAGES[state.page].key === pg.key) render();
+  }
+}
+async function loadPage(page) {
+  if (pending.has(page.key)) return;
+  pending.add(page.key);
+  try { state.data[page.key] = await page.load(); }
+  catch (e) { state.pageErrors[page.key] = e.message || String(e); }
+  pending.delete(page.key);
+  render();
+}
+
+function periods() {
+  const out = [], d = new Date();
+  for (let i = 0; i < CONFIG.periodMonths; i++) {
+    const m = new Date(d.getFullYear(), d.getMonth() - i, 1);
+    if (CONFIG.firstPeriod && `${m.getFullYear()}-${String(m.getMonth() + 1).padStart(2, '0')}` < CONFIG.firstPeriod) break;   // nothing before the first month with data
+    out.push({ v: `${m.getFullYear()}-${String(m.getMonth() + 1).padStart(2, '0')}`, label: m.toLocaleDateString('en-IE', { month: 'long', year: 'numeric' }) });
+  }
+  if (!out.length) out.push({ v: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`, label: d.toLocaleDateString('en-IE', { month: 'long', year: 'numeric' }) });   // firstPeriod is in the future
+  return out;
+}
+const scope = () => state.projects.filter(p =>
+  (state.project === 'all' || p.id === state.project) && (state.client === 'all' || p.client === state.client));
+
+/* ================= Rendering ================= */
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const opt = (v, label, sel) => `<option value="${esc(v)}"${v === sel ? ' selected' : ''}>${esc(label)}</option>`;
+
+function renderFilters() {
+  const clients = [...new Set(state.projects.map(p => p.client))].sort();
+  const projs = state.projects.filter(p => state.client === 'all' || p.client === state.client);
+  $('fClient').innerHTML = opt('all', 'All clients', state.client) + clients.map(c => opt(c, c, state.client)).join('');
+  $('fProject').innerHTML = opt('all', 'All projects', state.project) + projs.map(p => opt(p.id, p.name, state.project)).join('');
+  $('fPeriod').innerHTML = periods().map(p => opt(p.v, p.label, state.period)).join('');
+}
+
+function renderNav() {
+  const vis = visiblePages();
+  if (!vis.includes(state.page)) state.page = vis[0];   // the current page was hidden: go back to the overview
+  const pos = vis.indexOf(state.page);
+  $('pageName').textContent = CONFIG.pages[state.page];
+  $('pageNo').textContent = `Page ${pos + 1} of ${vis.length}`;
+  $('prev').disabled = pos === 0;
+  $('next').disabled = pos === vis.length - 1;
+  $('tabs').innerHTML = vis.map((i, n) =>
+    `<button class="tab" data-i="${i}"${i === state.page ? ' aria-current="page"' : ''}>${n + 1} ${esc(CONFIG.pages[i])}</button>`).join('');
+}
+// Moves through the visible pages only.
+function stepPage(d) {
+  const vis = visiblePages(), pos = vis.indexOf(state.page), nx = pos + d;
+  if (pos >= 0 && nx >= 0 && nx < vis.length) { state.page = vis[nx]; render(); }
+}
+
+// Each page: an optional data loader (run once, then cached) and a render function.
+// Later phases replace the placeholders.
+let pbPromise = null;   // project boards are shared by the Overview, Design and Commercial: fetch once
+let pbEarly = null;     // POAP read of last visit's boards, started before the project list arrives
+let loadingProjects = null;   // the new project list while a background refresh is running
+const boardIds = () => [...new Set((loadingProjects || state.projects).map(p => p.boardId).filter(Boolean).map(String))];
+function startEarlyPB() {
+  const ids = readJSON(BOARDS_KEY, []);
+  if (!ids.length) return;
+  const p = loadProjectBoards(ids);
+  p.catch(() => {});
+  pbEarly = { ids, p };
+}
+const getPB = () => pbPromise || (pbPromise = (async () => {
+  const ids = boardIds(), early = pbEarly;
+  pbEarly = null;
+  if (!early) return loadProjectBoards(ids);
+  // use the early read, and read only boards added since last visit
+  const extra = ids.filter(id => !early.ids.includes(id));
+  const [got, more] = await Promise.all([early.p.catch(() => null), extra.length ? loadProjectBoards(extra) : {}]);
+  if (got) return Object.assign({}, got, more);
+  return Object.assign(await loadProjectBoards(ids.filter(id => early.ids.includes(id))), more);
+})().catch(e => { pbPromise = null; throw e; }));
+
+const PAGES = [
+  // The overview only loads the boards its visible sections need.
+  { key: 'overview', section: null, render: pageOverview, load: async () => {
+      const prog = isOn('programme') || isOn('design') || isOn('commercial'), dc = isOn('design') || isOn('commercial'), ql = isOn('quality');
+      const [progD, pb, snap, site, q, sn] = await Promise.all([prog ? loadProgressHistory() : null, dc ? getPB() : null, dc ? getSnapshot() : null,
+        isOn('hs') ? loadSitePerformance() : null, ql ? loadQuality() : null, ql ? loadSnagging() : null]);
+      return { prog: progD, pb, snap, site, q, sn }; } },
+  { key: 'programme', section: 'programme', load: loadProgressHistory, render: pageProgramme },
+  { key: 'progress', section: 'design', load: async () => { const [pb, snap, prog] = await Promise.all([getPB(), getSnapshot(), loadProgressHistory()]); return { pb, snap, prog }; }, render: (pr, d) => pageProgress(pr, d, 'design') },
+  { key: 'progress', section: 'commercial', load: async () => { const [pb, snap, prog] = await Promise.all([getPB(), getSnapshot(), loadProgressHistory()]); return { pb, snap, prog }; }, render: (pr, d) => pageProgress(pr, d, 'commercial') },
+  { key: 'site', section: 'hs', load: loadSitePerformance, render: pageHS },
+  { key: 'quality', section: 'quality', load: async () => { const [q, sn] = await Promise.all([loadQuality(), loadSnagging()]); return { q, sn }; }, render: pageQuality }
+];
+
+/* ================= Per-project calculations (shared by the function pages and the Overview) ================= */
+function computeProgramme(p, rows) {
+  const mine = rows.filter(r => r.boardId === String(p.boardId) && r.weekEnding.slice(0, 7) === state.period)
+    .sort((a, b) => b.weekEnding.localeCompare(a.weekEnding));
+  const r = mine[0] || null;
+  return { p, r, st: r ? programmeStatus(r) : null };
+}
+function computeProgress(p, data, kind) {
+  const names = CONFIG.projectBoard.rows[kind];
+  const live = state.period === currentMonth();
+  const table = live ? ((data.pb[String(p.boardId)] || {})[kind] || null) : snapshotTable(data.snap, p, kind, state.period);
+  const rows = names.map(n => table ? table[n.toLowerCase()] || null : null);
+  const hasData = !!table && rows.some(Boolean);
+  return { p, rows, hasData, st: hasData ? progressStatus(rows) : null };
+}
+function computeQuality(p, data) {
+  const kinds = ['benchmark', 'checksheet', 'handover'];
+  const [y, mo] = state.period.split('-').map(Number);
+  const periodEnd = new Date(y, mo, 0), today = new Date();
+  const asOf = periodEnd < today ? periodEnd : today;          // overdue measured at the end of the period, or today
+  const R = CONFIG.rules.quality;
+  const k = {}; let overdue = 0, worst = 0, done = 0, total = 0;
+  kinds.forEach(kind => {
+    const items = data.q[kind].filter(it => it.projectIds.includes(String(p.id)));
+    const d = items.filter(it => it.done).length;
+    k[kind] = { done: d, total: items.length };
+    done += d; total += items.length;
+    items.forEach(it => {
+      if (!it.done && it.due && it.due < asOf) {
+        overdue++; worst = Math.max(worst, Math.floor((asOf - it.due) / 86400000));
+      }
+    });
+  });
+  let st = STATUS.ok;
+  if (R.riskIfAnyOverdue && overdue > 0) st = STATUS.risk;
+  if (overdue > 0 && worst > R.actionIfOverdueDays) st = STATUS.mit;
+  const sn = data.sn ? data.sn[String(p.id)] || { total: 0, actual: 0 } : null;
+  const snOpen = sn && sn.total != null && sn.actual != null ? sn.total - sn.actual : 0;
+  if (snOpen > R.actionIfOpenSnags) st = STATUS.mit; else if (snOpen > R.riskIfOpenSnags && st !== STATUS.mit) st = STATUS.risk;
+  return { p, k, overdue, worst, done, total, st: (total || sn) ? st : null, sn, snOpen };
+}
+function computeHS(p, rows) {
+  const period = state.period, R = CONFIG.rules.hs;
+  const sumRows = (list, k) => list.reduce((a, r) => a + r[k], 0);
+  const mine = rows.filter(r => r.projectIds.includes(String(p.id)) || (!r.projectIds.length && r.projectName === p.name));
+  const ptd = mine.filter(r => r.month === period);
+  const itd = mine.filter(r => r.month && r.month <= period);
+  const s = (list) => { const o = {}; ['hours', 'gcc', 'tbt', 'aud', 'inc', 'lti', 'nm', 'nc', 'openCA', 'overdueCA'].forEach(k => { o[k] = sumRows(list, k); }); return o; };
+  const P = s(ptd), I = s(itd);
+  const Y = s(mine.filter(r => r.month && r.month >= period.slice(0, 4) + '-01' && r.month <= period));   // year to date
+  const share = elapsedShare(p.timeline, period);
+  const ytdShare = ytdTimelineShare(p.timeline, period);
+  const tgt = (k) => { const full = p.hsTarget[k]; return { full, toDate: full ? Math.round(full * (share === null ? 1 : share)) : 0 }; };
+  let st = STATUS.ok;
+  if (R.riskIfNonCompliance && P.nc > 0) st = STATUS.risk;
+  if (R.riskIfNoGccTbtAudit && (P.gcc === 0 || P.tbt === 0 || P.aud === 0)) st = STATUS.risk;
+  if (R.actionIfLti && P.lti > 0) st = STATUS.mit;
+  const hasData = mine.length > 0;
+  // YTD target = project total x share of the planned timeline falling between 1 Jan (or project start) and the period end
+  const tgtY = (k) => { const full = p.hsTarget[k]; return full && ytdShare !== null ? Math.round(full * ytdShare) : null; };
+  return { p, P, I, Y, t: { gcc: tgt('gcc'), tbt: tgt('tbt'), aud: tgt('aud') }, ty: { gcc: tgtY('gcc'), tbt: tgtY('tbt'), aud: tgtY('aud') },
+    st: hasData ? st : null, hasData };
+}
+
+/* ---------- Page 1: Portfolio overview ---------- */
+const NOSTATUS = { label: 'No data', bg: '#ECEEF1', fg: '#3B4452', rank: 0 };
+function pageOverview(projects, d) {
+  const S = SECTIONS.filter(sec => isOn(sec.key));   // visible sections, in report order
+  if (!S.length) return '<div class="note">No departments are switched on yet. Use Report sections to choose what this report shows.</div>';
+  const per = projects.map(p => {
+    const x = { p };
+    if (isOn('programme')) x.pr = computeProgramme(p, d.prog);
+    if (isOn('design')) x.de = computeProgress(p, d, 'design');
+    if (isOn('commercial')) x.co = computeProgress(p, d, 'commercial');
+    if (isOn('hs')) x.hs = computeHS(p, d.site);
+    if (isOn('quality')) x.q = computeQuality(p, { q: d.q, sn: d.sn });
+    const byKey = { programme: x.pr, design: x.de, commercial: x.co, hs: x.hs, quality: x.q };
+    x.sts = S.map(sec => byKey[sec.key].st);
+    const known = x.sts.filter(Boolean);
+    x.overall = known.length ? known.reduce((a, b) => b.rank > a.rank ? b : a) : null;   // hidden sections never count
+    return x;
+  });
+  const col = (k) => S.findIndex(sec => sec.key === k);
+  const worstOf = (i) => { const k = per.map(x => x.sts[i]).filter(Boolean); return k.length ? k.reduce((a, b) => b.rank > a.rank ? b : a) : NOSTATUS; };
+  const tile = (name, big, sub, st) => `<div class="tile"><div class="tname">${name}</div><div class="big">${big}</div><div class="small">${sub}</div>${pill(st)}</div>`;
+  const sumProg = (key, f) => per.reduce((a, x) => a + x[key].rows.reduce((b, r) => b + ((r && r[f]) || 0), 0), 0);
+  const progTile = (key) => { const a = sumProg(key, 'actual'), pl = sumProg(key, 'planned'); return { big: `${fmt(a)} <small>ITD / ${fmt(pl)} PTD</small>`, sub: !pl && !a ? 'No data' : pl - a > 0 ? `${fmt(pl - a)} behind plan` : 'On or ahead of plan' }; };
+  const tiles = [];
+  if (isOn('programme')) {
+    const progRows = per.filter(x => x.pr.r);
+    const behind = progRows.filter(x => x.pr.r.actual < x.pr.r.planned).length;
+    const worstDelay = progRows.reduce((a, x) => Math.max(a, x.pr.r.worstDelay), 0);
+    tiles.push(tile('Programme', `${behind} <small>of ${progRows.length} behind plan</small>`, `Worst delay ${worstDelay ? worstDelay.toFixed(1) + ' days' : 'none'}`, worstOf(col('programme'))));
+  }
+  if (isOn('design')) { const t = progTile('de'); tiles.push(tile('Design', t.big, t.sub, worstOf(col('design')))); }
+  if (isOn('commercial')) { const t = progTile('co'); tiles.push(tile('Commercial', t.big, t.sub, worstOf(col('commercial')))); }
+  if (isOn('hs')) {
+    const ltiM = per.reduce((a, x) => a + x.hs.P.lti, 0);
+    const lti = per.reduce((a, x) => a + x.hs.I.lti, 0), gccM = per.reduce((a, x) => a + x.hs.P.gcc, 0), tbtM = per.reduce((a, x) => a + x.hs.P.tbt, 0), audM = per.reduce((a, x) => a + x.hs.P.aud, 0);
+    tiles.push(tile('Health &amp; safety', `${fmt(ltiM)} <small>LTI${ltiM === 1 ? '' : 's'} this month</small>`, `${fmt(lti)} to date | This month: ${gccM} GCCs, ${tbtM} TBTs, ${audM} audits`, worstOf(col('hs'))));
+  }
+  if (isOn('quality')) {
+    const overdue = per.reduce((a, x) => a + x.q.overdue, 0);
+    const snOpen = d.sn ? per.reduce((a, x) => a + x.q.snOpen, 0) : null;
+    tiles.push(tile('Quality', `${fmt(overdue)} <small>overdue items</small>`, snOpen == null ? 'Snagging not connected yet' : `${fmt(snOpen)} open snags`, worstOf(col('quality'))));
+  }
+  const spread = S.map((sec, i) => {
+    const c = { 3: 0, 2: 0, 1: 0, 0: 0 };
+    per.forEach(x => { c[(x.sts[i] || NOSTATUS).rank]++; });
+    const n = per.length || 1, seg = (k, colr) => c[k] ? `<div style="width:${c[k] / n * 100}%;background:${colr}"></div>` : '';
+    const parts = [[1, 'on track'], [2, 'at risk'], [3, 'need action'], [0, 'no data']].filter(([k]) => c[k]).map(([k, t]) => `${c[k]} ${t}`).join(', ');
+    return `<div style="display:grid;grid-template-columns:140px minmax(0,1fr) 260px;gap:14px;align-items:center">
+      <div style="font-size:13px;font-weight:700">${esc(sec.name)}</div>
+      <div style="display:flex;height:16px;border-radius:3px;overflow:hidden;background:#E6E9ED">${seg(1, '#1E7A46')}${seg(2, '#D98A1C')}${seg(3, '#B42318')}${seg(0, '#B8C2CC')}</div>
+      <div class="small">${parts}</div></div>`;
+  }).join('');
+  const varTxt = (v) => v === 0 ? '0%' : (v > 0 ? '+' : '\u2212') + Math.abs(v) + '%';
+  const showProg = isOn('programme');
+  return `
+    <div class="tiles">${tiles.join('')}</div>
+    <div><h3 style="margin:0 0 10px;font-size:16px">Status across projects</h3>
+      <div style="display:flex;flex-direction:column;gap:9px">${spread}</div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:10px" class="small">
+        <span><span style="display:inline-block;width:11px;height:11px;background:#1E7A46;vertical-align:-1px"></span> On track</span>
+        <span><span style="display:inline-block;width:11px;height:11px;background:#D98A1C;vertical-align:-1px"></span> At risk</span>
+        <span><span style="display:inline-block;width:11px;height:11px;background:#B42318;vertical-align:-1px"></span> Action required</span>
+        <span><span style="display:inline-block;width:11px;height:11px;background:#B8C2CC;vertical-align:-1px"></span> No data</span></div></div>
+    <div><h3 style="margin:0 0 10px;font-size:16px">All projects on a page</h3>
+    <div class="scroll"><table>
+      <thead><tr><th>Project</th><th>Client</th>${showProg ? '<th class="r">Planned</th><th class="r">Actual</th><th class="r">Variance</th><th class="r">Worst delay</th>' : ''}
+        ${S.map(sec => `<th>${esc(sec.short)}</th>`).join('')}<th>Overall</th></tr></thead>
+      <tbody>${per.map(x => { const r = showProg ? x.pr.r : null, v = r ? r.actual - r.planned : null;
+        return `<tr><td><b>${esc(x.p.name)}</b></td><td>${esc(x.p.client)}</td>
+          ${showProg ? `<td class="r">${r ? r.planned + '%' : '–'}</td><td class="r">${r ? r.actual + '%' : '–'}</td>
+          <td class="r" style="font-weight:700;color:${v == null ? '#2D2D2D' : v < 0 ? '#B42318' : v > 0 ? '#1E7A46' : '#2D2D2D'}">${v == null ? '–' : varTxt(v)}</td>
+          <td class="r">${r && r.worstDelay ? r.worstDelay.toFixed(1) + ' days' : '–'}</td>` : ''}
+          ${x.sts.map(st => `<td>${pill(st || NOSTATUS)}</td>`).join('')}<td>${pill(x.overall || NOSTATUS)}</td></tr>`; }).join('')}</tbody>
+    </table></div></div>`;
+}
+
+/* ---------- Page 2: Programme (Progress History) ---------- */
+function programmeStatus(r) {
+  const R = CONFIG.rules.programme, v = r.actual - r.planned, d = r.worstDelay;
+  if (v >= R.okVariance && d <= R.okDelay) return STATUS.ok;
+  if (v >= R.riskVariance && d <= R.riskDelay) return STATUS.risk;
+  return STATUS.mit;
+}
+const fmtDate = (iso) => new Date(iso + 'T00:00:00').toLocaleDateString('en-IE', { day: 'numeric', month: 'short', year: 'numeric' });
+
+function pageProgramme(projects, rows) {
+  const live = state.period === currentMonth();
+  const per = projects.map(p => computeProgramme(p, rows));
+  const withData = per.filter(x => x.r);
+  const behindN = withData.filter(x => x.r.actual < x.r.planned).length;
+  const worst = withData.reduce((a, x) => x.r.worstDelay > (a ? a.r.worstDelay : -1) ? x : a, null);
+  const tasksBehind = withData.reduce((a, x) => a + x.r.tasksBehind, 0), tasksTracked = withData.reduce((a, x) => a + x.r.tasksTracked, 0);
+  const latest = withData.map(x => x.r.weekEnding).sort().pop();
+  const varTxt = (v) => v === 0 ? '0%' : (v > 0 ? '+' : '\u2212') + Math.abs(v) + '%';
+  const short = (t) => { const s = String(t || '').replace(/\s+/g, ' ').trim(); const n = CONFIG.progressHistory.commentChars; return s.length > n ? s.slice(0, n - 1) + '…' : s; };
+  return `
+    <div class="small">${!withData.length ? '' : live ? `Latest weekly snapshot, week ending ${fmtDate(latest)}` : `Month-end position, week ending ${fmtDate(latest)}`}</div>
+    <div class="tiles">
+      <div class="tile"><div class="tname">Behind plan</div><div class="big">${behindN} <small>of ${withData.length} projects</small></div></div>
+      <div class="tile"><div class="tname">Worst delay</div><div class="big"${worst && worst.r.worstDelay ? ' style="color:#B42318"' : ''}>${worst ? worst.r.worstDelay.toFixed(1) : '0'} <small>days</small></div>
+        <div class="small">${worst && worst.r.worstDelay ? esc(worst.p.name) : 'No delays'}</div></div>
+      <div class="tile"><div class="tname">Tasks behind</div><div class="big">${fmt(tasksBehind)} <small>of ${fmt(tasksTracked)} tracked</small></div></div>
+    </div>
+    <div class="scroll"><table>
+      <thead><tr><th>Project</th><th style="min-width:180px">Actual vs planned</th><th class="r">Planned</th><th class="r">Actual</th><th class="r">Variance</th>
+        <th class="r">Tasks behind</th><th class="r">Worst delay</th><th>Status</th><th style="min-width:240px">Site comments</th></tr></thead>
+      <tbody>${per.map(x => {
+        if (!x.r) return `<tr><td><b>${esc(x.p.name)}</b></td><td colspan="8" class="small">${x.p.boardId ? 'No programme snapshot for this month' : 'No project board ID'}</td></tr>`;
+        const r = x.r, v = r.actual - r.planned, barC = x.st.label === 'On track' ? '#1E7A46' : x.st.label === 'At risk' ? '#D98A1C' : '#B42318';
+        return `<tr><td><b>${esc(x.p.name)}</b></td>
+          <td><div style="position:relative;height:9px;background:#E6E9ED;border-radius:5px"><div style="position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:${barC};width:${Math.min(100, r.actual)}%"></div><div style="position:absolute;top:-4px;width:2px;height:17px;background:#2D2D2D;left:${Math.min(100, r.planned)}%"></div></div></td>
+          <td class="r">${r.planned}%</td><td class="r">${r.actual}%</td><td class="r" style="font-weight:700;color:${v < 0 ? '#B42318' : v > 0 ? '#1E7A46' : '#2D2D2D'}">${varTxt(v)}</td>
+          <td class="r">${r.tasksBehind} of ${r.tasksTracked}</td><td class="r">${r.worstDelay ? r.worstDelay.toFixed(1) + ' days' : '–'}</td>
+          <td>${pill(x.st)}</td><td class="small" style="white-space:normal">${esc(short(r.comments)) || '–'}</td></tr>`;
+      }).join('')}</tbody>
+    </table></div>
+    ${attentionList(withData)}`;
+}
+
+function attentionList(withData) {
+  const all = [];
+  withData.forEach(x => (x.r.topDelays || []).forEach(t => all.push(Object.assign({ project: x.p.name }, t))));
+  if (!withData.length) return '';
+  const top = all.sort((a, b) => b.daysLate - a.daysLate).slice(0, CONFIG.progressHistory.attentionCount);
+  const rows = top.map(t => `<div style="display:grid;grid-template-columns:minmax(0,1fr) 170px 90px;gap:12px;align-items:center;padding:9px 12px;border:1px solid #E6E9ED;border-radius:4px">
+      <div style="font-size:13.5px"><b>${esc(t.project)}</b> | ${esc(t.name)}${t.area ? ` <span class="small">(${esc(t.area)})</span>` : ''}</div>
+      <div style="display:flex;align-items:center;gap:8px"><div style="flex:1;position:relative;height:8px;background:#E6E9ED;border-radius:4px"><div style="position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:#B42318;width:${Math.min(100, t.actual)}%"></div><div style="position:absolute;top:-4px;width:2px;height:16px;background:#2D2D2D;left:${Math.min(100, t.planned)}%"></div></div><span class="small">${t.actual}% / ${t.planned}%</span></div>
+      <div style="text-align:right;font-weight:700;color:#B42318">${Number(t.daysLate).toFixed(1)} days</div></div>`).join('');
+  return `<div><h3 style="margin:0 0 10px;font-size:16px">Needs attention: tasks furthest behind</h3>
+    <div style="display:flex;flex-direction:column;gap:8px">${rows || '<div class="small">No tasks behind in this snapshot.</div>'}</div></div>`;
+}
+
+/* ---------- Pages 3 & 4: Design and Commercial (POAP tables on each project board) ---------- */
+function progressStatus(rows) {
+  let worst = null;   // worst shortfall share across rows with a planned value
+  rows.forEach(r => {
+    if (!r || r.planned == null || r.planned <= 0 || r.actual == null) return;
+    const s = Math.max(0, (r.planned - r.actual) / r.planned);
+    worst = worst === null ? s : Math.max(worst, s);
+  });
+  if (worst === null) return null;
+  if (worst === 0) return STATUS.ok;
+  return worst <= CONFIG.rules.progress.riskUpToShortfall ? STATUS.risk : STATUS.mit;
+}
+
+function pageProgress(projects, data, kind) {
+  const names = CONFIG.projectBoard.rows[kind];
+  const live = state.period === currentMonth();
+  const per = projects.map(p => computeProgress(p, data, kind));
+  const sum = (i, f) => per.reduce((a, x) => a + ((x.rows[i] && x.rows[i][f]) || 0), 0);
+  const tiles = names.map((n, i) => {
+    const a = sum(i, 'actual'), pl = sum(i, 'planned'), t = sum(i, 'total');
+    const behind = pl - a;
+    return `<div class="tile"><div class="tname">${esc(n)}</div>
+      <div class="big">${fmt(a)} <small>ITD / ${fmt(pl)} PTD</small></div>
+      ${t ? `<div class="small">Total: ${fmt(t)}</div>` : ''}
+      <div class="small" style="font-weight:700;color:${!pl && !a ? '#5B6472' : behind > 0 ? '#B42318' : '#1E7A46'}">${!pl && !a ? 'No data' : behind > 0 ? `${fmt(behind)} behind plan` : 'On or ahead of plan'}</div></div>`;
+  }).join('');
+  const cell = (r) => {
+    if (!r || (r.actual == null && r.planned == null)) return '<td class="r small">–</td>';
+    const late = r.planned != null && r.actual != null && r.actual < r.planned;
+    return `<td class="r"${late ? ' style="color:#B42318;font-weight:700"' : ''}>${r.actual ?? '–'} / ${r.planned ?? '–'}${r.total != null ? ` <span class="small">of ${fmt(r.total)}</span>` : ''}</td>`;
+  };
+  return `
+    <div class="small">${live ? 'Live, as at today' : 'Month-end snapshot'}</div>
+    <div class="tiles">${tiles}</div>
+    <div class="scroll"><table>
+      <thead><tr><th>Project</th>${names.map(n => `<th class="r">${esc(n)}: ITD / PTD</th>`).join('')}<th class="r">Packages behind</th><th class="r">Worst slip</th><th>Status</th></tr></thead>
+      <tbody>${per.map(x => { const pk = packagesFor(x.p, kind, data);
+        return `<tr><td><b>${esc(x.p.name)}</b></td>${x.rows.map(cell).join('')}
+        <td class="r"${pk && pk.behind ? ' style="color:#B42318;font-weight:700"' : ''}>${pk ? `${pk.behind} of ${pk.total}` : '<span class="small">Not available yet</span>'}</td>
+        <td class="r">${pk && pk.worst ? Number(pk.worst).toFixed(0) + ' days' : pk ? '–' : ''}</td>
+        <td>${live && !x.p.boardId ? '<span class="small">No project board ID</span>' : !x.hasData ? `<span class="small">${live ? 'No data' : 'No snapshot'}</span>` : x.st ? pill(x.st) : '<span class="small">No plan yet</span>'}</td></tr>`; }).join('')}</tbody>
+    </table></div>
+    ${packagesList(projects, kind, data, live)}`;
+}
+
+// "Packages behind schedule": the late packages across projects, most days late first (current month only)
+function packagesList(projects, kind, data, live) {
+  const found = projects.map(p => ({ p, pk: packagesFor(p, kind, data) })).filter(x => x.pk);
+  let body;
+  if (!found.length) body = '<div class="small">Not available yet for this month.</div>';
+  else {
+    const all = [];
+    found.forEach(({ p, pk }) => pk.list.forEach(x => all.push(Object.assign({ project: p.name }, x))));
+    const top = all.sort((a, b) => (Number(b.daysLate) || 0) - (Number(a.daysLate) || 0)).slice(0, CONFIG.packagesBehind.listCount);
+    body = top.length ? top.map(t => `<div style="display:grid;grid-template-columns:minmax(0,1fr) 220px 80px;gap:12px;align-items:center;padding:9px 12px;border:1px solid #E6E9ED;border-radius:4px">
+        <div style="font-size:13.5px"><b>${esc(t.project)}</b> | ${esc(t.name || '')}</div>
+        <div class="small">${esc(t.stage || '')}</div>
+        <div style="text-align:right;font-weight:700;color:#B42318">${Number(t.daysLate || 0).toFixed(0)} days</div></div>`).join('')
+      : '<div class="small">No packages behind schedule.</div>';
+  }
+  return `<div><h3 style="margin:0 0 10px;font-size:16px">Packages behind schedule</h3><div style="display:flex;flex-direction:column;gap:8px">${body}</div></div>`;
+}
+
+/* ---------- Page 6: Quality ---------- */
+function pageQuality(projects, data) {
+  const per = projects.map(p => computeQuality(p, data));
+  const sum = (kind, f) => per.reduce((a, x) => a + x.k[kind][f], 0);
+  const allOver = per.reduce((a, x) => a + x.overdue, 0), allWorst = per.reduce((a, x) => Math.max(a, x.worst), 0);
+  const snRaised = per.reduce((a, x) => a + ((x.sn && x.sn.total) || 0), 0), snClosed = per.reduce((a, x) => a + ((x.sn && x.sn.actual) || 0), 0);
+  const tile = (kind) => `<div class="tile"><div class="tname">${CONFIG.quality[kind].label}</div>
+    <div class="big">${fmt(sum(kind, 'done'))} <small>of ${fmt(sum(kind, 'total'))}</small></div><div class="small">Completed of planned</div></div>`;
+  const pct = (d, t) => t ? Math.round(d / t * 100) : 0;
+  return `
+    <div class="tiles">
+      <div class="tile"><div class="tname">Open snags</div>${data.sn ? `<div class="big">${fmt(snRaised - snClosed)}</div><div class="small">${fmt(snClosed)} closed of ${fmt(snRaised)} raised</div>` : '<div class="big">–</div><div class="small">Snagging board not connected yet</div>'}</div>
+      ${tile('benchmark')}${tile('checksheet')}${tile('handover')}
+      <div class="tile"><div class="tname">Overdue items</div><div class="big">${fmt(allOver)}</div>
+        <div class="small">Benchmarks, check sheets and handovers past due${allWorst ? `; worst ${allWorst} days` : ''}</div></div>
+    </div>
+    <div class="scroll"><table>
+      <thead><tr><th>Project</th><th class="r">Benchmarks done / planned</th><th class="r">Check sheets completed / planned</th>
+        <th class="r">Handovers done / planned</th><th class="r">Snags raised / closed</th><th style="min-width:180px">Completed overall</th><th>Status</th></tr></thead>
+      <tbody>${per.map(x => `<tr>
+        <td><b>${esc(x.p.name)}</b></td>
+        <td class="r">${x.k.benchmark.done} / ${x.k.benchmark.total}</td>
+        <td class="r">${fmt(x.k.checksheet.done)} / ${fmt(x.k.checksheet.total)}</td>
+        <td class="r">${x.k.handover.done} / ${x.k.handover.total}</td>
+        <td class="r"><b>${x.sn && x.sn.total != null ? fmt(x.sn.total) + ' / ' + fmt(x.sn.actual || 0) : '–'}</b></td>
+        <td>${x.total ? `<div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:8px;background:#E6E9ED;border-radius:4px;position:relative"><div style="position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:#0B6A82;width:${pct(x.done, x.total)}%"></div></div><span class="small">${pct(x.done, x.total)}%</span></div>` : '<span class="small">n/a</span>'}</td>
+        <td>${x.total || x.sn ? pill(x.st) : '<span class="small">No data</span>'}</td></tr>`).join('')}</tbody>
+    </table></div>`;
+}
+
+const STATUS = {
+  ok:   { label: 'On track',        bg: '#E3F1E8', fg: '#1E5E39', rank: 1 },
+  risk: { label: 'At risk',         bg: '#FBEBD5', fg: '#7A3405', rank: 2 },
+  mit:  { label: 'Action required', bg: '#FBE1DE', fg: '#8E1B12', rank: 3 }
+};
+const pill = (s) => `<span class="pill" style="background:${s.bg};color:${s.fg}">${s.label}</span>`;
+let renderingPage = 0;
+function skeleton() {
+  const tile = '<div class="tile sk" style="height:96px;border:0"></div>';
+  const row = '<div class="sk" style="height:34px"></div>';
+  return `<div class="tiles">${tile}${tile}${tile}${tile}</div><div style="display:flex;flex-direction:column;gap:8px">${row.repeat(6)}</div>
+    <span class="small" role="status">Loading data from monday…</span>`;
+}
+const fmt = (n) => Number(n).toLocaleString('en-IE');
+const rate = (inc, hrs) => hrs ? (inc * 100000 / hrs).toFixed(1) : '0.0';
+
+/* ---------- Page 5: Health & safety ---------- */
+function pageHS(projects, rows) {
+  const per = projects.map(p => computeHS(p, rows));
+  const tot = (k, w) => per.reduce((a, x) => a + x[w][k], 0);
+  const totT = (k, w) => per.reduce((a, x) => a + x.t[k][w], 0);
+  const tile = (name, k) => {
+    const actual = tot(k, 'Y'), full = totT(k, 'full');
+    const tys = per.map(x => x.ty[k]).filter(v => v !== null), target = tys.reduce((a, v) => a + v, 0);
+    const noTimeline = per.some(x => x.t[k].full && x.ty[k] === null);
+    const status = !target ? '' : actual >= target
+      ? '<span class="pill" style="background:#E3F1E8;color:#1E5E39">Ahead of target</span>'
+      : '<span class="pill" style="background:#FBEBD5;color:#7A3405">Behind target</span>';
+    return `<div class="tile"><div class="tname">${name}</div>
+      <div class="big">${fmt(actual)} <small>YTD / ${target ? fmt(target) + ' target YTD' : (noTimeline ? 'no programme dates' : 'no target')}</small></div>
+      <div class="small">${full ? `Project target ${fmt(full)}` : 'No project target set'}${noTimeline ? '; some projects have no programme dates' : ''}</div>${status}</div>`;
+  };
+  const inc = tot('inc', 'I'), hrs = tot('hours', 'I');
+  return `
+    <div class="tiles">
+      ${tile('Good catch cards', 'gcc')}${tile('Toolbox talks', 'tbt')}${tile('H&amp;S audits', 'aud')}
+      <div class="tile"><div class="tname">Lost time injuries</div><div class="big">${fmt(tot('lti', 'P'))} <small>this month</small></div>
+        <div class="small">${fmt(tot('lti', 'I'))} to date | ${fmt(inc)} incidents, ${fmt(tot('nm', 'I'))} near misses, ${fmt(tot('nc', 'I'))} non-compliances to date</div></div>
+      <div class="tile"><div class="tname">Hours worked</div><div class="big">${fmt(hrs)}</div>
+        <div class="small">Incident rate ${rate(inc, hrs)} per 100,000 hours</div></div>
+    </div>
+    <div class="scroll"><table>
+      <thead><tr><th>Project</th><th class="r">GCC month / YTD</th><th class="r">TBT month / YTD</th><th class="r">Audits month / YTD</th>
+        <th class="r">Incidents to date</th><th class="r">LTIs to date</th><th class="r">Near misses to date</th><th class="r">Non-compliances to date</th>
+        <th class="r">Open / overdue CAs</th><th class="r">Hours worked</th><th class="r">Incident rate</th><th>Status</th></tr></thead>
+      <tbody>${per.map(x => `<tr>
+        <td><b>${esc(x.p.name)}</b></td>
+        <td class="r">${x.P.gcc} / ${fmt(x.Y.gcc)}</td><td class="r">${x.P.tbt} / ${fmt(x.Y.tbt)}</td><td class="r">${x.P.aud} / ${fmt(x.Y.aud)}</td>
+        <td class="r">${x.I.inc}</td><td class="r"${x.I.lti ? ' style="color:#B42318;font-weight:700"' : ''}>${x.I.lti}</td>
+        <td class="r">${x.I.nm}</td><td class="r">${x.I.nc}</td><td class="r">${x.P.openCA} / ${x.P.overdueCA}</td>
+        <td class="r">${fmt(x.I.hours)}</td><td class="r">${rate(x.I.inc, x.I.hours)}</td>
+        <td>${x.hasData ? pill(x.st) : '<span class="small">No data</span>'}</td></tr>`).join('')}</tbody>
+    </table></div>`;
+}
+
+function pagePlaceholder(projects) {
+  return `<div class="note">This page is built in a later phase. It will cover ${projects.length} project${projects.length === 1 ? '' : 's'} in the current filter.</div>
+    <table><thead><tr><th>Project</th><th>Client</th><th>Stage</th><th>Project board ID</th></tr></thead>
+    <tbody>${projects.map(p => `<tr><td>${esc(p.name)}</td><td>${esc(p.client)}</td><td>${esc(p.stage || '–')}</td><td>${esc(p.boardId || 'Missing')}</td></tr>`).join('')}</tbody></table>`;
+}
+
+// Builds one report page (header, body, footer). Used on screen and for the PDF export.
+function sheetHTML(i) {
+  renderingPage = i;
+  const periodLabel = (periods().find(p => p.v === state.period) || {}).label || '';
+  const projects = scope();
+  const scopeLabel = state.project !== 'all' ? (state.projects.find(p => p.id === state.project) || {}).name
+    : state.client !== 'all' ? `${state.client} projects` : 'All projects';
+  const page = PAGES[i];
+  let body;
+  if (state.loading) body = skeleton();
+  else if (state.error) body = `<div class="err">${esc(state.error)}</div>`;
+  else if (!projects.length) body = '<div class="note">No projects match these filters.</div>';
+  else if (page.load && page.key in state.pageErrors) body = `<div class="err">${esc(state.pageErrors[page.key])}</div>`;
+  else if (page.load && !(page.key in state.data)) { body = skeleton(); loadPage(page); }
+  else body = page.render(projects, state.data[page.key]);
+  return `
+    <div class="hd"><img class="logo" src="${LOGO}" alt="Holden"><div><h2>${esc(CONFIG.pages[i])}</h2>
+      <div class="sub">Leadership report | ${esc(periodLabel)} | ${esc(scopeLabel || '')}</div></div>
+      <div class="pg">Page ${visiblePages().indexOf(i) + 1} of ${visiblePages().length}</div></div>
+    ${body}
+    <div class="ftr"><span>Holden | Leadership report | ${esc(periodLabel)}</span><span></span></div>`;
+}
+function renderSheet() { $('sheet').innerHTML = sheetHTML(state.page); }
+
+/* ================= Export PDF: one A4 landscape page per report page, current filters ================= */
+function loadScript(src) {
+  return new Promise((ok, fail) => {
+    if (document.querySelector(`script[src="${src}"]`)) return ok();
+    const t = document.createElement('script'); t.src = src; t.onload = ok;
+    t.onerror = () => fail(new Error('Could not load ' + src)); document.head.appendChild(t);
+  });
+}
+async function exportPdf() {
+  const btn = $('exportPdf'), msg = $('exportMsg');
+  if (state.loading || state.error) return;
+  btn.disabled = true; msg.textContent = 'Preparing PDF…';
+  let area = null;
+  try {
+    // make sure every page's data is loaded
+    const seen = new Set();
+    for (const page of PAGES) {
+      if (!page.load || !isOn(page.section) || seen.has(page.key)) continue;
+      seen.add(page.key);
+      if (!(page.key in state.data) && !(page.key in state.pageErrors)) {
+        try { state.data[page.key] = await page.load(); } catch (e) { state.pageErrors[page.key] = e.message || String(e); }
+      }
+    }
+    await Promise.all([loadScript(CONFIG.pdf.libs.html2canvas), loadScript(CONFIG.pdf.libs.jspdf)]);
+    if (document.fonts && document.fonts.ready) await document.fonts.ready;
+    area = document.createElement('div'); area.id = 'exportArea';
+    area.innerHTML = visiblePages().map(i => `<section class="sheet">${sheetHTML(i)}</section>`).join('');
+    document.body.appendChild(area);
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    const W = 297, H = 210, M = 8;
+    const sheets = area.querySelectorAll('.sheet');
+    for (let i = 0; i < sheets.length; i++) {
+      msg.textContent = `Preparing PDF… page ${i + 1} of ${sheets.length}`;
+      const canvas = await window.html2canvas(sheets[i], { scale: 2, backgroundColor: '#ffffff', useCORS: true });
+      const ratio = Math.min((W - 2 * M) / canvas.width, (H - 2 * M) / canvas.height);
+      const w = canvas.width * ratio, h = canvas.height * ratio;
+      if (i) pdf.addPage();
+      pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', (W - w) / 2, M, w, h);
+    }
+    const periodLabel = (periods().find(p => p.v === state.period) || {}).label || state.period;
+    pdf.save(`Holden Leadership Report - ${periodLabel}.pdf`);
+    msg.textContent = 'PDF downloaded.';
+  } catch (e) {
+    msg.textContent = 'Export failed: ' + (e.message || e);
+  } finally {
+    if (area) area.remove();
+    btn.disabled = false;
+  }
+}
+
+function render() { renderFilters(); renderNav(); renderSheet(); }
+
+/* ================= Remembered filters (this browser only) ================= */
+const PREFS_KEY = 'holden-leadership-report-filters';
+function savePrefs() { try { localStorage.setItem(PREFS_KEY, JSON.stringify({ project: state.project, client: state.client, period: state.period, page: state.page })); } catch (e) {} }
+function loadPrefs() {
+  try {
+    const p = JSON.parse(localStorage.getItem(PREFS_KEY) || 'null');
+    if (!p) return;
+    if (p.client === 'all' || state.projects.some(x => x.client === p.client)) state.client = p.client;
+    if (p.project === 'all' || state.projects.some(x => x.id === p.project)) state.project = p.project;
+    if (periods().some(x => x.v === p.period)) state.period = p.period;
+    if (Number.isInteger(p.page) && p.page >= 0 && p.page < CONFIG.pages.length) state.page = p.page;
+  } catch (e) {}
+}
+const _render = render;
+render = function () { _render(); savePrefs(); };
+
+let refreshing = false;
+function showUpdated() {
+  const t = state.loadedAt;
+  let txt = '';
+  if (t) {
+    const today = t.toDateString() === new Date().toDateString();
+    txt = 'Updated ' + (today ? '' : t.toLocaleDateString('en-IE', { day: 'numeric', month: 'short' }) + ' ')
+      + t.toLocaleTimeString('en-IE', { hour: '2-digit', minute: '2-digit' });
+  }
+  if (refreshing) txt += (txt ? ', ' : '') + 'refreshing…';
+  else if (state.refreshError) txt += (txt ? ', ' : '') + 'could not refresh';
+  $('updated').textContent = txt;
+  $('updated').title = state.refreshError || '';
+  $('refresh').disabled = refreshing;
+}
+
+// Forget loaded data so the next reads go to monday again.
+function resetData() { cache.clear(); pending.clear(); pbPromise = null; snapPromise = null; pbEarly = null; }
+
+// Starts the boards that don't need the project list, so they load while the Projects board is read.
+// Hidden departments' boards are never fetched.
+function warmUp() {
+  const warm = [];
+  if (isOn('programme') || isOn('design') || isOn('commercial')) warm.push(loadProgressHistory);
+  if (isOn('design') || isOn('commercial')) warm.push(getSnapshot, startEarlyPB);
+  if (isOn('hs')) warm.push(loadSitePerformance);
+  if (isOn('quality')) warm.push(loadQuality, loadSnagging);
+  warm.forEach(f => { try { const r = f(); if (r && r.catch) r.catch(() => {}); } catch (e) {} });
+}
+
+// Loads the data of every page that is switched on, all at once.
+async function loadVisiblePages() {
+  const data = {}, errors = {}, seen = new Set(), jobs = [];
+  PAGES.forEach(pg => {
+    if (!pg.load || !isOn(pg.section) || seen.has(pg.key)) return;
+    seen.add(pg.key);
+    jobs.push(pg.load().then(v => { data[pg.key] = v; }, e => { errors[pg.key] = e.message || String(e); }));
+  });
+  await Promise.all(jobs);
+  return { data, errors };
+}
+
+async function loadProjectList() {
+  const projects = await loadProjects();
+  writeJSON(BOARDS_KEY, [...new Set(projects.map(p => p.boardId).filter(Boolean).map(String))]);
+  return projects;
+}
+
+// Builds the report from last visit's saved copy. Returns false if there is none or it doesn't fit any more.
+async function showSaved() {
+  const saved = readJSON(SAVED_KEY, null);
+  if (!saved || !saved.r) return false;
+  const t0 = performance.now();
+  replay = saved.r;
+  try {
+    state.projects = await loadProjects();
+    loadPrefs();
+    const { data } = await loadVisiblePages();   // a page missing from the copy loads live when it is opened
+    state.data = data; state.pageErrors = {};
+    state.loadedAt = new Date(saved.at); state.loading = false;
+    console.info(`[Leadership report] saved copy from ${state.loadedAt.toLocaleString('en-IE')} shown in ${Math.round(performance.now() - t0)} ms`);
+    return true;
+  } catch (e) {
+    state.projects = []; state.data = {};
+    return false;
+  } finally {
+    replay = null; resetData();
+  }
+}
+
+// Reloads everything live while the current report stays on screen, then swaps it in.
+async function refreshInBackground(reset) {
+  if (refreshing) return;
+  refreshing = true; state.refreshError = ''; showUpdated();
+  recorded = {};
+  const t0 = performance.now();
+  try {
+    if (reset) resetData();
+    warmUp();
+    loadingProjects = await loadProjectList();
+    const { data, errors } = await loadVisiblePages();
+    state.projects = loadingProjects; state.data = data; state.pageErrors = errors;
+    state.loadedAt = new Date(); state.error = '';
+    // keep the filters valid if a project or client is no longer there
+    if (state.project !== 'all' && !state.projects.some(p => p.id === state.project)) state.project = 'all';
+    if (state.client !== 'all' && !state.projects.some(p => p.client === state.client)) state.client = 'all';
+    console.info(`[Leadership report] live refresh done in ${Math.round(performance.now() - t0)} ms`);
+  } catch (e) {
+    state.refreshError = 'Could not refresh: ' + (e.message || e);
+    console.error('[Leadership report] refresh failed', e);
+  }
+  loadingProjects = null; refreshing = false;
+  showUpdated(); render();
+}
+
+// Loads live from scratch, page by page (first visit in this browser, or after an error).
+async function loadFresh(withPrefs) {
+  resetData(); recorded = {};
+  state.data = {}; state.pageErrors = {}; state.error = ''; state.refreshError = '';
+  state.loading = true; render();
+  try {
+    warmUp();
+    state.projects = await loadProjectList();
+    state.loadedAt = new Date();
+    if (withPrefs) loadPrefs();
+  } catch (e) { state.error = e.message || String(e); }
+  state.loading = false; showUpdated(); render();
+  if (!state.error) setTimeout(prefetchPages, 300);
+}
+
+function refreshData() {
+  if (state.error || !state.projects.length) loadFresh(false);
+  else refreshInBackground(true);
+}
+
+/* ================= Events ================= */
+$('refresh').addEventListener('click', refreshData);
+document.addEventListener('keydown', e => {
+  if (/^(SELECT|INPUT|TEXTAREA)$/.test(e.target.tagName) || e.altKey || e.ctrlKey || e.metaKey) return;
+  if ($('secDlg').open) return;
+  if (e.key === 'ArrowLeft') stepPage(-1);
+  if (e.key === 'ArrowRight') stepPage(1);
+});
+$('exportPdf').addEventListener('click', exportPdf);
+$('fProject').addEventListener('change', e => { state.project = e.target.value; render(); });
+$('fClient').addEventListener('change', e => { state.client = e.target.value; state.project = 'all'; render(); });
+$('fPeriod').addEventListener('change', e => { state.period = e.target.value; render(); });
+$('prev').addEventListener('click', () => stepPage(-1));
+$('next').addEventListener('click', () => stepPage(1));
+$('sectionsBtn').addEventListener('click', openSections);
+$('secDone').addEventListener('click', () => $('secDlg').close());
+$('secList').addEventListener('change', e => { const i = e.target.closest('input[data-k]'); if (i) setSection(i.dataset.k, i.checked); });
+$('tabs').addEventListener('click', e => { const b = e.target.closest('.tab'); if (b) { state.page = +b.dataset.i; render(); } });
+
+/* ================= Start ================= */
+(async function init() {
+  const P = periods();
+  state.period = P[Math.min(CONFIG.defaultPeriod, P.length - 1)].v;
+  render();
+  if (!CONFIG.boards.portfolio) {
+    state.error = 'Set CONFIG.boards.portfolio to the Portfolio | Projects board ID.';
+    state.loading = false; render(); return;
+  }
+  // a tiny call to time the monday connection on its own
+  const tc = performance.now();
+  gql('query { me { id } }').then(() => console.info(`[Leadership report] monday connection ready in ${Math.round(performance.now() - tc)} ms`)).catch(() => {});
+  // read the report sections first, so hidden departments' boards are never fetched
+  loadSections();
+  if (await showSaved()) {
+    refreshInBackground(false);   // starts the live reads, then...
+    render();                     // ...shows last visit's report straight away
+    return;
+  }
+  loadFresh(true);
+})();
+</script>
+</body>
+</html>
